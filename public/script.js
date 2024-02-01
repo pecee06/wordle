@@ -9,16 +9,19 @@ const cols = 5
     }
 })()
 
-async function main() {
-    let words
+async function fetchWords() {
     try {
         const url = "/api/words"
         const res = await fetch(url)
-        words = await res.json()
+        return await res.json()
     } catch (err) {
         console.log(err.message);
-        words = []
+        return []
     }
+}
+
+async function main() {
+    const words = await fetchWords()
 
     function generateRandomWord() {
         let index = Math.floor(Math.random() * words.length)
@@ -33,6 +36,7 @@ async function main() {
     
     let counter = 0
     let tries = 0
+    let won = false
     
     function reload() {
         location.reload()
@@ -60,6 +64,7 @@ async function main() {
             }
 
             if (currWord === wordOfDay){
+                won = true
                 setTimeout(() => {
                     alert("You won")
                     reload()
@@ -86,9 +91,11 @@ async function main() {
     }
     
     function CheckDefeat() {
-        if (tries > (rows-1)){
-            alert("You Lost")
-            reload()
+        if (!won && tries > (rows-1)){
+            setTimeout(() => {
+                alert("You Lost")
+                reload()
+            }, 1000);
         }
     }
     
