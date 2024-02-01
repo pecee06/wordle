@@ -1,6 +1,7 @@
-(()=>{
-    const rows = 6
-    const cols = 5
+const rows = 6
+const cols = 5
+
+;(()=>{
     for (let i=0; i<rows*cols; i++){
         document.querySelector("#grid").innerHTML += `
             <div class="w-[70px] h-[70px] border border-solid border-white transition-all flex justify-center items-center text-2xl text-white uppercase"></div>
@@ -11,7 +12,7 @@
 async function main() {
     let words
     try {
-        const url = "http://127.0.0.1:3000/api/words"
+        const url = "/api/words"
         const res = await fetch(url)
         words = await res.json()
     } catch (err) {
@@ -31,7 +32,6 @@ async function main() {
     const grids = document.querySelectorAll("#grid div")
     
     let counter = 0
-    let currWord = ""
     let tries = 0
     
     function reload() {
@@ -39,9 +39,15 @@ async function main() {
     }
     
     function CheckWord() {
-        if ((counter > 0) && !(counter % 5)){
-            let i = 0, index = tries*5
-            while (i < 5){
+        if ((counter > 0) && !(counter % cols)){
+            let i, index = tries*cols, currWord = ""
+
+            for (i = index; i < index+cols; i++){
+                currWord += grids[i].textContent
+            }
+
+            i = 0
+            while (i < cols){
                 if (currWord[i] === wordOfDay[i])
                     grids[index + i].classList.add("bg-green-500")
 
@@ -54,32 +60,33 @@ async function main() {
             }
 
             if (currWord === wordOfDay){
-                alert("You won")
-                reload()
+                setTimeout(() => {
+                    alert("You won")
+                    reload()
+                }, 1000);
             }
 
-            currWord = ""
             tries++
         }
     }
     
-    function Enter(e) {
-        let upperLimit = (tries*5) + 4
+    function InsertLetter(e) {
+        let upperLimit = (tries*cols) + (cols-1)
 
         if (counter <= upperLimit){
-            grids[counter++].textContent = e.key
-            currWord += e.key
+            grids[counter].textContent = e.key
+            counter++
         }
     }
     
     function Back() {
-        let lowerLimit = tries*5
+        let lowerLimit = tries*cols
         if (counter > lowerLimit)
             grids[--counter].textContent = ""
     }
     
     function CheckDefeat() {
-        if (tries > 5){
+        if (tries > (rows-1)){
             alert("You Lost")
             reload()
         }
@@ -92,7 +99,7 @@ async function main() {
         CheckDefeat()
 
         if (e.key.length == 1 && e.key.match(/[a-z]/))
-            Enter(e)
+            InsertLetter(e)
 
         if (e.key == "Backspace")
             Back()
